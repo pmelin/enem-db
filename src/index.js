@@ -1,7 +1,7 @@
 var fs = require('fs');
 var csv = require('fast-csv');
 var mongoose = require('mongoose');
-var School = require('../models/School');
+var School = require('./School');
 var files = ["PLANILHA_ENEM_ESCOLA_CH_2015.csv", "PLANILHA_ENEM_ESCOLA_CN_2015.csv", "PLANILHA_ENEM_ESCOLA_LC_2015.csv", "PLANILHA_ENEM_ESCOLA_MT_2015.csv", "PLANILHA_ENEM_ESCOLA_RED_2015.csv"];
 var schools = new Map();
 
@@ -44,7 +44,7 @@ function processFile(file, callback) {
             delimiter: ';',
             objectMode: true
         };
-        //change to test/ to test with fewer registers
+
         var stream = fs.createReadStream("files/" + file);
 
         var csvStream = csv(parsingOptions).on("data", function(data) {
@@ -56,6 +56,7 @@ function processFile(file, callback) {
         stream.pipe(csvStream);
     });
 }
+
 /*
 Process each school considering csv headers
 */
