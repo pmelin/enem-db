@@ -1,5 +1,5 @@
 {
-  "name": "enemloader",
+  "name": "enem-db",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "fast-csv": "^2.4.0",
-    "mongoose": "^4.10.0"
+    "mongoose": "^4.10.2"
   },
   "devDependencies": {
     "eslint": "^3.19.0"
