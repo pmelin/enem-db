@@ -1,5 +1,6 @@
 var fs = require('fs');
 var csv = require('fast-csv');
+var removeAccents = require('remove-accents');
 var mongoose = require('mongoose');
 var School = require('./School');
 var files = ["PLANILHA_ENEM_ESCOLA_CH_2015.csv", "PLANILHA_ENEM_ESCOLA_CN_2015.csv", "PLANILHA_ENEM_ESCOLA_LC_2015.csv", "PLANILHA_ENEM_ESCOLA_MT_2015.csv", "PLANILHA_ENEM_ESCOLA_RED_2015.csv"];
@@ -19,7 +20,8 @@ mongoose.connection.on('open', async function() {
         }
     }
 
-    for (var [code, schoolAvgs] of schools) {
+    for (var [code,
+        schoolAvgs]of schools) {
         var sumAvg = 0;
 
         for (var avg of schoolAvgs) {
@@ -63,9 +65,9 @@ Process each school considering csv headers
 function processRow(data) {
     return new School({
         code: data['CÓDIGO DA ENTIDADE'],
-        name: data['NOME DA ENTIDADE'],
+        name: text(data['NOME DA ENTIDADE']),
         uf: data['SIGLA DA UF'],
-        municipality: data['NOME MUNICÍPIO'],
+        municipality: text(data['NOME MUNICÍPIO']),
         adminDependency: data['DEPENDÊNCIA ADMINISTRATIVA'],
         participationRate: data['TAXA DE PARTICIPAÇÃO'],
         permanenceRate: data['INDICADOR DE PERMANÊNCIA NA ESCOLA'],
@@ -94,4 +96,8 @@ async function populateAvg(data) {
     var avgPerFile = schools.get(csvSchool.code);
     avgPerFile.push(csvSchool.average);
     schools.set(csvSchool.code, avgPerFile);
+}
+
+function text(value) {
+    return removeAccents(value).toUpperCase();
 }
