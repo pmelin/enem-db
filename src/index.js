@@ -3,10 +3,13 @@ var csv = require('fast-csv');
 var removeAccents = require('remove-accents');
 var mongoose = require('mongoose');
 var School = require('./School');
+var State = require('./State');
 var files = ["PLANILHA_ENEM_ESCOLA_CH_2015.csv", "PLANILHA_ENEM_ESCOLA_CN_2015.csv", "PLANILHA_ENEM_ESCOLA_LC_2015.csv", "PLANILHA_ENEM_ESCOLA_MT_2015.csv", "PLANILHA_ENEM_ESCOLA_RED_2015.csv"];
 var schools = new Map();
+var states = new Map();
 
 mongoose.connect('mongodb://localhost/schoolRanking');
+
 mongoose.connection.on('open', async function() {
 
     var insert = true;
@@ -18,6 +21,14 @@ mongoose.connection.on('open', async function() {
         } else {
             await processFile(file, populateAvg);
         }
+    }
+
+
+    for (var [uf,
+        locations]of states) {
+        var state = new State({uf: uf, municipalities: Array.from(locations)});
+
+        await state.save();
     }
 
     for (var [code,
@@ -35,6 +46,8 @@ mongoose.connection.on('open', async function() {
         await school.save();
 
     }
+
+    process.exit();
 
 });
 
@@ -60,14 +73,26 @@ function processFile(file, callback) {
 }
 
 /*
-Process each school considering csv headers
+Process each state with its municipalities and each school considering csv headers
 */
 function processRow(data) {
+
+    var state = data['SIGLA DA UF'];
+    var municipality = text(data['NOME MUNICÍPIO']);
+
+    var locations = states.get(state);
+    if (!locations) {
+        locations = new Set();
+    }
+
+    locations.add(municipality);
+    states.set(state, locations);
+
     return new School({
         code: data['CÓDIGO DA ENTIDADE'],
         name: text(data['NOME DA ENTIDADE']),
-        uf: data['SIGLA DA UF'],
-        municipality: text(data['NOME MUNICÍPIO']),
+        uf: state,
+        municipality: municipality,
         adminDependency: data['DEPENDÊNCIA ADMINISTRATIVA'],
         participationRate: data['TAXA DE PARTICIPAÇÃO'],
         permanenceRate: data['INDICADOR DE PERMANÊNCIA NA ESCOLA'],
