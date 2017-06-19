@@ -12,6 +12,9 @@ mongoose.connect('mongodb://localhost/schoolRanking');
 
 mongoose.connection.on('open', async function() {
 
+    /*
+Processes the first file and populate it in the database and calculates the average for the remaining files
+ */
     var insert = true;
     for (var file of files) {
 
@@ -23,7 +26,9 @@ mongoose.connection.on('open', async function() {
         }
     }
 
-
+    /*
+    Populates all municipalities related to the same state
+     */
     for (var [uf,
         locations]of states) {
         var state = new State({uf: uf, municipalities: Array.from(locations)});
@@ -45,6 +50,19 @@ mongoose.connection.on('open', async function() {
         school.average = sumAvg / schoolAvgs.length;
         await school.save();
 
+    }
+
+    /*
+    Processes schools positions
+     */
+    var position = 0;
+
+    var orderedSchools = await School.find({}).sort({average: -1});
+    for (var orderedSchool of orderedSchools) {
+        position++;
+        console.log("Adding position for school: " + orderedSchool.name);
+        orderedSchool.position = position;
+        await orderedSchool.save();
     }
 
     process.exit();
@@ -100,7 +118,8 @@ function processRow(data) {
         approvalRate: data['TAXA DE APROVAÇÃO'],
         disapprovalRate: data['TAXA DE REPROVAÇÃO'],
         abandonmentRate: data['TAXA DE ABANDONO'],
-        average: data['MÉDIA ESCOLA']
+        average: data['MÉDIA ESCOLA'],
+        position: data['POSITION']
     });
 }
 

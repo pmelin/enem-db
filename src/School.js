@@ -37,6 +37,9 @@ var SchoolSchema = new Schema({
     },
     average: {
         type: Number
+    },
+    position: {
+      type: Number
     }
 });
 
